@@ -1,13 +1,15 @@
 # NC News Seeding
 
-//What you need to do:
-Remove the link to the initial instructions in README.md.
-Add instructions explaining how to set up the .env files:
-Specify what files need to be created.
-Explain what values need to be added for a developer to connect to both databases locally.//
+Setting up .env files
 
 Step 1, Add .env files to the root directory 
 - .env.test
 - .env.development
 
-step 2, Add values
+step 2, Add values to .env files to connect to the relevant databases
+- In .env.test file add PGDATABASE=nc_news_test
+- In .env.development file add PGDATABASE=nc_news
+
+You can run the followinf commands in the terminal, 
+"run npm test-seed" & "npm run seed-dev",
+to make sure the files are correctly connected to the databases.
