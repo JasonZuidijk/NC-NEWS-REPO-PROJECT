@@ -1,6 +1,6 @@
 const db = require("../db/connection");
 const endpoints = require("../endpoints.json");
-const selectTopics = require("../models/models");
+const { selectTopics, selectArticleById } = require("../models/models");
 
 const getApi = (req, res) => {
   res.status(200).send({ endpoints });
@@ -12,4 +12,11 @@ const getTopics = (req, res) => {
   });
 };
 
-module.exports = { getApi, getTopics };
+const getArticleById = (req, res) => {
+  const { article_id } = req.params;
+  return selectArticleById(article_id).then((article) => {
+    res.status(200).send({ article });
+  });
+};
+
+module.exports = { getApi, getTopics, getArticleById };
