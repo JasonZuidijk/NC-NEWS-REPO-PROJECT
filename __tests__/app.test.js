@@ -26,3 +26,25 @@ describe("GET /api", () => {
       });
   });
 });
+
+describe("GET /api/topics", () => {
+  test("200: Responds with an array of topic objects", () => {
+    return request(app)
+      .get("/api/topics")
+      .expect(200)
+      .then(({ body }) => {
+        const array = body.topics;
+        console.log(array);
+        expect(array.length).toBe(3);
+        array.forEach((topic) => {
+          expect(typeof topic.slug).toBe("string");
+          expect(typeof topic.slug).toBe("string");
+          expect(typeof topic.img_url).toBe("string");
+        });
+      });
+  });
+});
+
+//get all topics, /api/topics
+//responds with array of topic objects with following properties slug, description
+//consider errors that could oocur with this endpoint
