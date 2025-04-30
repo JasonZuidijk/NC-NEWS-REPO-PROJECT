@@ -52,45 +52,30 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body }) => {
         expect(body.article).toHaveProperty("article_id", articleId);
-        expect(typeof body.article.article_id).toBe("number")
-        expect(typeof body.article.title).toBe("string")
-        expect(typeof body.article.topic).toBe("string")
-        expect(typeof body.article.author).toBe("string")
-        expect(typeof body.article.body).toBe("string")
-        expect(body.article).toHaveProperty("created_at")
-        expect(typeof body.article.votes).toBe("number")
-        expect(typeof body.article.article_img_url).toBe("string")
+        expect(typeof body.article.article_id).toBe("number");
+        expect(typeof body.article.title).toBe("string");
+        expect(typeof body.article.topic).toBe("string");
+        expect(typeof body.article.author).toBe("string");
+        expect(typeof body.article.body).toBe("string");
+        expect(body.article).toHaveProperty("created_at");
+        expect(typeof body.article.votes).toBe("number");
+        expect(typeof body.article.article_img_url).toBe("string");
+      });
+  });
+  test("status:400, responds with an error message when passed a bad article ID", () => {
+    return request(app)
+      .get("/api/articles/notAnId")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid Input :(");
+      });
+  });
+  test("status:404, responds with an error message when passed a valid ID that does not exist in the database", () => {
+    return request(app)
+      .get("/api/articles/9999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article Does Not Exist :(");
       });
   });
 });
-
-
-// don't know how to test created_at
-
-//do not know how to handle or test for errors
-
-// /api/articles/:article_id
-// get article by id
-//article object with correct properties (8)
-//consider what errors could occur
-//add description of the endpoint to your /api endpoint
-
-
-//an article object, which should have the following properties:
-// author
-// title
-// article_id
-// body
-// topic
-// created_at
-// votes
-// article_img_url
-
-// article_id      | 1
-// title           | Living in the shadow of a great man
-// topic           | mitch
-// author          | butter_bridge
-// body            | I find this existence challenging
-// created_at      | 2020-07-09 21:11:00
-// votes           | 100
-// article_img_url | https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700
