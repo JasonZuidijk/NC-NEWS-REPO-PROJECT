@@ -33,9 +33,9 @@ describe("GET /api/topics", () => {
       .get("/api/topics")
       .expect(200)
       .then(({ body }) => {
-        const array = body.topics;
-        expect(array.length).toBe(3);
-        array.forEach((topic) => {
+        const topicsArray = body.topics;
+        expect(topicsArray.length).toBe(3);
+        topicsArray.forEach((topic) => {
           expect(typeof topic.slug).toBe("string");
           expect(typeof topic.slug).toBe("string");
           expect(typeof topic.img_url).toBe("string");
@@ -79,3 +79,40 @@ describe("GET /api/articles/:article_id", () => {
       });
   });
 });
+
+describe("GET /api/articles", () => {
+  test("200: Responds with an array of articles", () => {
+    return request(app)
+    .get("/api/articles")
+    .expect(200)
+    .then(({body}) => {
+      const articlesArray = body.articles
+      expect(articlesArray.length).toBe(13)
+      articlesArray.forEach((article) => {
+        expect(typeof article.author).toBe("string")
+        expect(typeof article.title).toBe("string")
+        expect(typeof article.topic).toBe("string")
+        expect(typeof article.created_at).toBe("string")
+        expect(typeof article.votes).toBe("number")
+        expect(typeof article.article_img_url).toBe("string")
+        expect(typeof article.comment_count).toBe("string")
+      })
+    })
+  })
+})
+
+
+
+//get all array of all articles
+//an articles array of article objects, each of which should have the following properties:
+// author
+// title
+// article_id
+// topic
+// created_at
+// votes
+// article_img_url
+// comment_count, which is the total count of all the comments with this article_id. You should make use of queries to the database in order to achieve this.
+
+//should be sorted by date in descendng order
+//there should not be a body property present on any of the article objects.
