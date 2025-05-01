@@ -37,8 +37,7 @@ describe("GET /api/topics", () => {
         expect(topicsArray.length).toBe(3);
         topicsArray.forEach((topic) => {
           expect(typeof topic.slug).toBe("string");
-          expect(typeof topic.slug).toBe("string");
-          expect(typeof topic.img_url).toBe("string");
+          expect(typeof topic.description).toBe("string");
         });
       });
   });
@@ -83,36 +82,102 @@ describe("GET /api/articles/:article_id", () => {
 describe("GET /api/articles", () => {
   test("200: Responds with an array of articles", () => {
     return request(app)
-    .get("/api/articles")
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const articlesArray = body.articles;
+        expect(articlesArray.length).toBe(13);
+        articlesArray.forEach((article) => {
+          expect(typeof article.author).toBe("string");
+          expect(typeof article.title).toBe("string");
+          expect(typeof article.topic).toBe("string");
+          expect(typeof article.created_at).toBe("string");
+          expect(typeof article.votes).toBe("number");
+          expect(typeof article.article_img_url).toBe("string");
+          expect(typeof article.comment_count).toBe("string");
+          expect(Object.hasOwn(article, "body")).toBe(false);
+        });
+      });
+  });
+});
+
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: Responds with an array of comments for the given article ID", () => {
+    const articleId = 3;
+    return request(app)
+      .get(`/api/articles/${articleId}/comments`)
+      .expect(200)
+      .then(({ body }) => {
+        expect(Array.isArray(body.comments)).toBe(true);
+        const commentsArray = body.comments;
+        expect(commentsArray.length).toBe(2);
+        commentsArray.forEach((comment) => {
+          expect(typeof comment.comment_id).toBe("number");
+          expect(typeof comment.votes).toBe("number");
+          expect(typeof comment.created_at).toBe("string");
+          expect(typeof comment.author).toBe("string");
+          expect(typeof comment.body).toBe("string");
+          expect(typeof comment.article_id).toBe("number");
+        });
+      });
+  });
+  test("status:400, responds with an error message when passed a bad article ID", () => {
+    return request(app)
+      .get("/api/articles/notAnId/comments")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid Input :(");
+      });
+  });
+  // test("status:404, responds with an error message when passed a valid ID that does not exist in the database", () => {
+  //   return request(app)
+  //     .get("/api/articles/9999/comments")
+  //     .expect(404)
+  //     .then(({ body }) => {
+  //       expect(body.msg).toBe("Article Does Not Exist :(");
+  //     });
+  // });
+  test("200: returns an empty array if the article exists but has no comments", () => {
+    return request(app)
+    .get("/api/articles/2/comments")
     .expect(200)
     .then(({body}) => {
-      const articlesArray = body.articles
-      expect(articlesArray.length).toBe(13)
-      articlesArray.forEach((article) => {
-        expect(typeof article.author).toBe("string")
-        expect(typeof article.title).toBe("string")
-        expect(typeof article.topic).toBe("string")
-        expect(typeof article.created_at).toBe("string")
-        expect(typeof article.votes).toBe("number")
-        expect(typeof article.article_img_url).toBe("string")
-        expect(typeof article.comment_count).toBe("string")
-      })
+      expect(Array.isArray(body.comments)).toBe(true)
+      expect(body.comments.length).toBe(0)
     })
   })
-})
+});
 
-
-
-//get all array of all articles
-//an articles array of article objects, each of which should have the following properties:
-// author
-// title
-// article_id
-// topic
-// created_at
+//get all comments for an article
+//responds with an arrayof comments for the given article_id
+//each comment should have following properties
+//comment_id
 // votes
-// article_img_url
-// comment_count, which is the total count of all the comments with this article_id. You should make use of queries to the database in order to achieve this.
+// created_at
+// author
+// body
+// article_id
 
-//should be sorted by date in descendng order
-//there should not be a body property present on any of the article objects.
+//should be served most recent first
+//errors?
+//add endpoint description
+
+// console.log (article_id = 3)
+// [
+//   {
+//     comment_id: 11,
+//     votes: 0,
+//     created_at: 2020-09-19T23:10:00.000Z,
+//     author: 'icellusedkars',
+//     body: 'Ambidextrous marsupial',
+//     article_id: 3
+//   },
+//   {
+//     comment_id: 10,
+//     votes: 0,
+//     created_at: 2020-06-20T07:24:00.000Z,
+//     author: 'icellusedkars',
+//     body: 'git push origin master',
+//     article_id: 3
+//   }
+// ]
