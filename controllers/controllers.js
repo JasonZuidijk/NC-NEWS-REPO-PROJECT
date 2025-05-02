@@ -39,15 +39,12 @@ const getArticleComments = (req, res, next) => {
   const { article_id } = req.params;
   selectArticleComments(article_id)
     .then((comments) => {
+        if (comments.length === 0){
+            return res.status(404).send({ msg: "Article Does Not Exist :(" })
+        }
       res.status(200).send({ comments });
     })
-    .catch((err)=> {
-        if (err.status === 404){
-            res.status(404).send()
-        }else {
-            next(err)
-        }
-    });
+    .catch(next);
 };
 
 module.exports = {

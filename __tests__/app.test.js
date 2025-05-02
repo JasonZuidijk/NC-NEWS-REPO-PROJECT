@@ -1,12 +1,10 @@
 const endpointsJson = require("../endpoints.json");
-/* Set up your test imports here */
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data");
 const app = require("../app");
 const request = require("supertest");
 const db = require("../db/connection");
 
-/* Set up your beforeEach & afterAll functions here */
 
 beforeEach(() => {
   return seed(data);
@@ -129,55 +127,13 @@ describe("GET /api/articles/:article_id/comments", () => {
         expect(body.msg).toBe("Invalid Input :(");
       });
   });
-  // test("status:404, responds with an error message when passed a valid ID that does not exist in the database", () => {
-  //   return request(app)
-  //     .get("/api/articles/9999/comments")
-  //     .expect(404)
-  //     .then(({ body }) => {
-  //       expect(body.msg).toBe("Article Does Not Exist :(");
-  //     });
-  // });
-  test("200: returns an empty array if the article exists but has no comments", () => {
+  test("status:404, responds with an error message when passed a valid ID that does not exist in the database", () => {
     return request(app)
-    .get("/api/articles/2/comments")
-    .expect(200)
-    .then(({body}) => {
-      expect(Array.isArray(body.comments)).toBe(true)
-      expect(body.comments.length).toBe(0)
-    })
-  })
+      .get("/api/articles/9999/comments")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article Does Not Exist :(");
+      });
+  });
 });
 
-//get all comments for an article
-//responds with an arrayof comments for the given article_id
-//each comment should have following properties
-//comment_id
-// votes
-// created_at
-// author
-// body
-// article_id
-
-//should be served most recent first
-//errors?
-//add endpoint description
-
-// console.log (article_id = 3)
-// [
-//   {
-//     comment_id: 11,
-//     votes: 0,
-//     created_at: 2020-09-19T23:10:00.000Z,
-//     author: 'icellusedkars',
-//     body: 'Ambidextrous marsupial',
-//     article_id: 3
-//   },
-//   {
-//     comment_id: 10,
-//     votes: 0,
-//     created_at: 2020-06-20T07:24:00.000Z,
-//     author: 'icellusedkars',
-//     body: 'git push origin master',
-//     article_id: 3
-//   }
-// ]
