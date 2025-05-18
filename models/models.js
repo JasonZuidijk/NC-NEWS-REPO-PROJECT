@@ -44,7 +44,7 @@ const insertCommentByArticleId = (article_id, { comment, author }) => {
   }
 
   if (!author || !comment) {
-    return Promise.reject({ status: 400, msg: "Missing required fields" });
+    return Promise.reject({ status: 400, msg: "Invalid Input :(" });
   }
   return db
     .query(

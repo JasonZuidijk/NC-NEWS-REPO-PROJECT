@@ -39,7 +39,6 @@ app.use((err, req, res, next) => {
   } else if (err.code === "22P02") {
     res.status(400).send({ msg: "Invalid Input :(" });
   } else {
-    console.error("Unhandled error:", err);
     res.status(500).send({ msg: "Internal Server Error" });
   }
 });

@@ -172,7 +172,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send({ comment: "very gripping" })
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Missing required fields");
+        expect(body.msg).toBe("Invalid Input :(");
       });
   });
   test("status:404, responds with an error message when username does not exist", () => {
@@ -188,4 +188,9 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   })
   
+describe
+
+
 })
+
+
