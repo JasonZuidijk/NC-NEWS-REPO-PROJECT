@@ -6,6 +6,7 @@ const {
   selectArticles,
   selectArticleComments,
   insertCommentByArticleId,
+  updateArticleVotes
 } = require("../models/models");
 
 const getApi = (req, res) => {
@@ -73,7 +74,23 @@ const postCommentByArticleId = (req, res, next) => {
   });
 };
 
+const patchArticleById = (req, res, next) => {
+  const { article_id } = req.params;
+  const { inc_votes } = req.body;
 
+  if (typeof inc_votes !== "number") {
+    return res.status(400).send({ msg: "Invalid Input :(" });
+  }
+
+  return updateArticleVotes(article_id, inc_votes)
+  .then((updatedArticle) => {
+    if (!updatedArticle) {
+      return res.status(404).send({ msg: "Article Does Not Exist :(" });
+    }
+    res.status(200).send({ article: updatedArticle });
+  })
+  .catch(next);
+};
 
 
 module.exports = {
@@ -83,4 +100,5 @@ module.exports = {
   getArticles,
   getArticleComments,
   postCommentByArticleId,
+  patchArticleById
 };
