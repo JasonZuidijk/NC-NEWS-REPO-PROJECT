@@ -188,9 +188,62 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   })
   
-describe
+describe("Patch /api/articles/:article_id", () => {
+  test("200: responds with updated article when votes decremented", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: -10 })
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article).toHaveProperty("article_id", 1);
+        expect(typeof body.article.votes).toBe("number");
+      });
+  });
 
+  test("400: responds with error when article_id is invalid (not a number)", () => {
+    return request(app)
+      .patch("/api/articles/not-an-id")
+      .send({ inc_votes: 1 })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid Input :(");
+      });
+  });
 
+  test("404: responds with error when article_id does not exist", () => {
+    return request(app)
+      .patch("/api/articles/9999")
+      .send({ inc_votes: 1 })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article Does Not Exist :(");
+      });
+  });
+
+  test("400: responds with error when inc_votes is not a number", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: "banana" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid Input :(");
+      });
+  });
+
+  test("400: responds with error when inc_votes is missing", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({})
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid Input :(");
+      });
+  });
+});
 })
+
+
+
+
 
 
