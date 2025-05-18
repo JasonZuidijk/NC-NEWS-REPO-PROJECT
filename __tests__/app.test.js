@@ -137,3 +137,55 @@ describe("GET /api/articles/:article_id/comments", () => {
   });
 });
 
+describe("POST /api/articles/:article_id/comments", () => {
+  test("insert comment object to article by article id", () => {
+   return request(app)
+    .post("/api/articles/1/comments")
+    .send({
+      author: "icellusedkars",
+      comment: "very gripping"
+    })
+    .expect(201)
+    .then(({ body }) => {
+      expect(body.comment.body).toBe("very gripping");
+    })
+  })
+  test("status:400, responds with an error message when passed a bad article ID", () => {
+    return request(app)
+    .post("/api/articles/notAnId/comments")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid Input :(");
+      })
+  })
+  test("status:404, responds with an error message when passed a valid ID that does not exist in the database", () => {
+    return request(app)
+      .post("/api/articles/9999/comments")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article Does Not Exist :(");
+      });
+  })
+  test("status:400, responds with an error message when 'author' is missing", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({ comment: "very gripping" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Missing required fields");
+      });
+  });
+  test("status:404, responds with an error message when username does not exist", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({
+        author: "nonexistent_user",
+        comment: "this should fail"
+      })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("User not found");
+      });
+  })
+  
+})

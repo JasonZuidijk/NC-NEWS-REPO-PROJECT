@@ -5,6 +5,7 @@ const {
   selectArticleById,
   selectArticles,
   selectArticleComments,
+  insertCommentByArticleId,
 } = require("../models/models");
 
 const getApi = (req, res) => {
@@ -37,14 +38,39 @@ const getArticles = (req, res, next) => {
 
 const getArticleComments = (req, res, next) => {
   const { article_id } = req.params;
-  selectArticleComments(article_id)
+  return selectArticleById(article_id)
+    .then((article) => {
+      if (!article) {
+        return res.status(404).send({ msg: "Article Does Not Exist :(" });
+      }
+      return selectArticleComments(article_id);
+    })
     .then((comments) => {
-        if (comments.length === 0){
-            return res.status(404).send({ msg: "Article Does Not Exist :(" })
-        }
       res.status(200).send({ comments });
     })
     .catch(next);
+};
+
+const postCommentByArticleId = (req, res, next) => {
+  const { article_id } = req.params;
+  const { body } = req;
+  return selectArticleById(article_id)
+  .then((article) => {
+    if (!article) {
+      return res.status(404).send({ msg: "Article Does Not Exist :(" });
+    }
+    return insertCommentByArticleId(article_id, body)
+  })
+  .then((comment) => {
+    res.status(201).send({ comment });
+  })
+  .catch((err) => {
+    if (err.code === "23503") {
+      res.status(404).send({ msg: "User not found" });
+    } else {
+      next(err);
+    }
+  });
 };
 
 module.exports = {
@@ -53,4 +79,5 @@ module.exports = {
   getArticleById,
   getArticles,
   getArticleComments,
+  postCommentByArticleId,
 };

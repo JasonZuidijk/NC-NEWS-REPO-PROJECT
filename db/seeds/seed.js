@@ -1,6 +1,6 @@
 const db = require("../connection");
-const format =require("pg-format")
-const {convertTimestampToDate, createRef} = require("./utils.js")
+const format = require("pg-format");
+const { convertTimestampToDate, createRef } = require("./utils.js");
 
 const seed = ({ topicData, userData, articleData, commentData }) => {
   return db
@@ -87,7 +87,7 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
     })
     .then(() => {
       const formattedUsers = userData.map((users) => {
-        return [users.username, users.name, userData.avatar_url];
+        return [users.username, users.name, users.avatar_url];
       });
       const insertUsersQuery = format(
         `INSERT INTO users 
