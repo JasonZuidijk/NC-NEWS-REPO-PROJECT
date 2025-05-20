@@ -242,6 +242,30 @@ describe("Patch /api/articles/:article_id", () => {
 });
 })
 
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: deletes the comment by ID and responds with no content", () => {
+    return request(app)
+      .delete("/api/comments/1")
+      .expect(204);
+  });
+  test("404: reponds with error if commentdoes not exits", () => {
+    return request(app)
+    .delete("/api/comments/9999")
+    .expect(404)
+    .then(({ body }) => {
+      expect(body.msg).toBe("Comment Does Not Exist :(")
+    })
+  })
+  test("400: responds with error if comment_id is not a number", () => {
+    return request(app)
+      .delete("/api/comments/notanid")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid Input :(");
+      });
+  });
+});
+
 
 
 
