@@ -6,7 +6,8 @@ const {
   selectArticles,
   selectArticleComments,
   insertCommentByArticleId,
-  updateArticleVotes
+  updateArticleVotes,
+  removeCommentById
 } = require("../models/models");
 
 const getApi = (req, res) => {
@@ -92,6 +93,21 @@ const patchArticleById = (req, res, next) => {
   .catch(next);
 };
 
+const deleteCommentById = (req, res, next) =>{
+const {comment_id} = req.params
+
+return removeCommentById(comment_id)
+.then((deletedComment) => {
+  if(!deletedComment) {
+    return res.status(404).send({msg: "Comment Does Not Exist :("})
+  }
+  res.status(204).send()
+})
+.catch(next)
+}
+
+
+
 
 module.exports = {
   getApi,
@@ -100,5 +116,6 @@ module.exports = {
   getArticles,
   getArticleComments,
   postCommentByArticleId,
-  patchArticleById
+  patchArticleById,
+  deleteCommentById
 };

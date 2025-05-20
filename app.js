@@ -10,7 +10,8 @@ const {
   getArticles,
   getArticleComments,
   postCommentByArticleId,
-  patchArticleById
+  patchArticleById,
+  deleteCommentById
 } = require("./controllers/controllers");
 
 app.get("/api", getApi);
@@ -27,6 +28,8 @@ app.post("/api/articles/:article_id/comments", postCommentByArticleId);
 
 app.patch("/api/articles/:article_id", patchArticleById)
 
+app.delete("/api/comments/:comment_id", deleteCommentById)
+
 
 app.use((err, req, res, next) => {
   if (err.status && err.msg) {
@@ -39,13 +42,3 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
-
-// app.use((err, req, res, next) => {
-//   if (err.code === "22P02") {
-//     res.status(400).send({ msg: "Invalid Input :(" });
-//   } else next(err);
-// });
-
-// app.use((err, req, res, next) => {
-//   res.status(500).send({ msg: "server Error!" });
-// });
