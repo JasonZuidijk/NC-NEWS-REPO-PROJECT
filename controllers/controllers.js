@@ -7,7 +7,8 @@ const {
   selectArticleComments,
   insertCommentByArticleId,
   updateArticleVotes,
-  removeCommentById
+  removeCommentById,
+  selectUsers,
 } = require("../models/models");
 
 const getApi = (req, res) => {
@@ -33,9 +34,13 @@ const getArticleById = (req, res, next) => {
 };
 
 const getArticles = (req, res, next) => {
-  return selectArticles().then((articles) => {
-    res.status(200).send({ articles });
-  });
+  const { sort_by, order } = req.query;
+
+  return selectArticles(sort_by, order)
+    .then((articles) => {
+      res.status(200).send({ articles });
+    })
+    .catch(next);
 };
 
 const getArticleComments = (req, res, next) => {
@@ -57,22 +62,22 @@ const postCommentByArticleId = (req, res, next) => {
   const { article_id } = req.params;
   const { body } = req;
   return selectArticleById(article_id)
-  .then((article) => {
-    if (!article) {
-      return res.status(404).send({ msg: "Article Does Not Exist :(" });
-    }
-    return insertCommentByArticleId(article_id, body)
-  })
-  .then((comment) => {
-    res.status(201).send({ comment });
-  })
-  .catch((err) => {
-    if (err.code === "23503") {
-      res.status(404).send({ msg: "User not found" });
-    } else {
-      next(err);
-    }
-  });
+    .then((article) => {
+      if (!article) {
+        return res.status(404).send({ msg: "Article Does Not Exist :(" });
+      }
+      return insertCommentByArticleId(article_id, body);
+    })
+    .then((comment) => {
+      res.status(201).send({ comment });
+    })
+    .catch((err) => {
+      if (err.code === "23503") {
+        res.status(404).send({ msg: "User not found" });
+      } else {
+        next(err);
+      }
+    });
 };
 
 const patchArticleById = (req, res, next) => {
@@ -84,30 +89,35 @@ const patchArticleById = (req, res, next) => {
   }
 
   return updateArticleVotes(article_id, inc_votes)
-  .then((updatedArticle) => {
-    if (!updatedArticle) {
-      return res.status(404).send({ msg: "Article Does Not Exist :(" });
-    }
-    res.status(200).send({ article: updatedArticle });
-  })
-  .catch(next);
+    .then((updatedArticle) => {
+      if (!updatedArticle) {
+        return res.status(404).send({ msg: "Article Does Not Exist :(" });
+      }
+      res.status(200).send({ article: updatedArticle });
+    })
+    .catch(next);
 };
 
-const deleteCommentById = (req, res, next) =>{
-const {comment_id} = req.params
+const deleteCommentById = (req, res, next) => {
+  const { comment_id } = req.params;
 
-return removeCommentById(comment_id)
-.then((deletedComment) => {
-  if(!deletedComment) {
-    return res.status(404).send({msg: "Comment Does Not Exist :("})
-  }
-  res.status(204).send()
-})
-.catch(next)
-}
+  return removeCommentById(comment_id)
+    .then((deletedComment) => {
+      if (!deletedComment) {
+        return res.status(404).send({ msg: "Comment Does Not Exist :(" });
+      }
+      res.status(204).send();
+    })
+    .catch(next);
+};
 
-
-
+const getUsers = (req, res, next) => {
+  return selectUsers()
+    .then((users) => {
+      res.status(200).send({ users });
+    })
+    .catch(next);
+};
 
 module.exports = {
   getApi,
@@ -117,5 +127,6 @@ module.exports = {
   getArticleComments,
   postCommentByArticleId,
   patchArticleById,
-  deleteCommentById
+  deleteCommentById,
+  getUsers,
 };

@@ -16,15 +16,6 @@ const selectArticleById = (article_id) => {
     });
 };
 
-const selectArticles = () => {
-  return db
-    .query(
-      "SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at,articles.votes, articles.article_img_url, COUNT(comments.comment_id) As comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY articles.created_at DESC"
-    )
-    .then((result) => {
-      return result.rows;
-    });
-};
 const selectArticleComments = (article_id) => {
   return db
     .query(
@@ -36,8 +27,7 @@ const selectArticleComments = (article_id) => {
     });
 };
 const insertCommentByArticleId = (article_id, { comment, author }) => {
-  const id = parseInt(article_id, 10)
-
+  const id = parseInt(article_id, 10);
 
   if (isNaN(Number(article_id))) {
     return Promise.reject({ status: 400, msg: "Invalid Input :(" });
@@ -57,28 +47,67 @@ const insertCommentByArticleId = (article_id, { comment, author }) => {
 };
 
 const updateArticleVotes = (article_id, inc_votes) => {
-
-  
-    return db
-      .query(
-        `UPDATE articles
+  return db
+    .query(
+      `UPDATE articles
          SET votes = votes + $1
          WHERE article_id = $2
          RETURNING *;`,
-        [inc_votes, article_id]
-      )
-      .then((result) => {
-        return result.rows[0];
-      });
-  };
-
-  const removeCommentById = (comment_id) => {
-    return db
-    .query(`DELETE FROM comments WHERE comment_id = $1 RETURNING *;`, [comment_id])
+      [inc_votes, article_id]
+    )
     .then((result) => {
-      return result.rows[0]
-    })
+      return result.rows[0];
+    });
+};
+
+const removeCommentById = (comment_id) => {
+  return db
+    .query(`DELETE FROM comments WHERE comment_id = $1 RETURNING *;`, [
+      comment_id,
+    ])
+    .then((result) => {
+      return result.rows[0];
+    });
+};
+
+const selectUsers = () => {
+  return db
+    .query(`SELECT username, name, avatar_url FROM users;`)
+    .then((result) => {
+      return result.rows;
+    });
+};
+
+const selectArticles = (sort_by = "created_at", order = "desc") => {
+  const validSortBy = [
+    "article_id",
+    "title",
+    "author",
+    "topic",
+    "created_at",
+    "votes",
+    "comment_count",
+  ];
+  const validOrder = ["asc", "desc"];
+
+  if (!validSortBy.includes(sort_by)) {
+    return Promise.reject({ status: 400, msg: "Invalid sort_by column" });
   }
+  if (!validOrder.includes(order)) {
+    return Promise.reject({ status: 400, msg: "Invalid order query" });
+  }
+
+  const queryStr = `
+    SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id)::INT AS comment_count
+    FROM articles
+    LEFT JOIN comments ON comments.article_id = articles.article_id
+    GROUP BY articles.article_id
+    ORDER BY ${sort_by} ${order};
+  `;
+  return db.query(queryStr).then(({ rows }) => {
+    return rows;
+  });
+};
 
 module.exports = {
   selectTopics,
@@ -87,5 +116,6 @@ module.exports = {
   selectArticleComments,
   insertCommentByArticleId,
   updateArticleVotes,
-  removeCommentById
+  removeCommentById,
+  selectUsers,
 };

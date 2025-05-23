@@ -5,7 +5,6 @@ const app = require("../app");
 const request = require("supertest");
 const db = require("../db/connection");
 
-
 beforeEach(() => {
   return seed(data);
 });
@@ -92,9 +91,57 @@ describe("GET /api/articles", () => {
           expect(typeof article.created_at).toBe("string");
           expect(typeof article.votes).toBe("number");
           expect(typeof article.article_img_url).toBe("string");
-          expect(typeof article.comment_count).toBe("string");
+          expect(typeof article.comment_count).toBe("number");
           expect(Object.hasOwn(article, "body")).toBe(false);
         });
+      });
+  });
+  test("200: responds with articles sorted by title in ascending order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=title&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        const titles = body.articles.map((article) => article.title);
+        const sortedTitles = [...titles].sort();
+        expect(titles).toEqual(sortedTitles);
+      });
+  });
+  test("200: responds with articles sorted by votes in descending order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes&order=desc")
+      .expect(200)
+      .then(({ body }) => {
+        const votes = body.articles.map((article) => article.votes);
+        const sortedVotes = [...votes].sort((a, b) => b - a);
+        expect(votes).toEqual(sortedVotes);
+      });
+  });
+  test("200: responds with articles sorted by created_at by default (desc)", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const dates = body.articles.map(
+          (article) => new Date(article.created_at)
+        );
+        const sortedDates = [...dates].sort((a, b) => b - a);
+        expect(dates).toEqual(sortedDates);
+      });
+  });
+  test("400: responds with error for invalid sort_by column", () => {
+    return request(app)
+      .get("/api/articles?sort_by=bananas")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid sort_by column");
+      });
+  });
+  test("400: responds with error for invalid order value", () => {
+    return request(app)
+      .get("/api/articles?order=upwards")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid order query");
       });
   });
 });
@@ -139,25 +186,25 @@ describe("GET /api/articles/:article_id/comments", () => {
 
 describe("POST /api/articles/:article_id/comments", () => {
   test("insert comment object to article by article id", () => {
-   return request(app)
-    .post("/api/articles/1/comments")
-    .send({
-      author: "icellusedkars",
-      comment: "very gripping"
-    })
-    .expect(201)
-    .then(({ body }) => {
-      expect(body.comment.body).toBe("very gripping");
-    })
-  })
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({
+        author: "icellusedkars",
+        comment: "very gripping",
+      })
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.comment.body).toBe("very gripping");
+      });
+  });
   test("status:400, responds with an error message when passed a bad article ID", () => {
     return request(app)
-    .post("/api/articles/notAnId/comments")
+      .post("/api/articles/notAnId/comments")
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toBe("Invalid Input :(");
-      })
-  })
+      });
+  });
   test("status:404, responds with an error message when passed a valid ID that does not exist in the database", () => {
     return request(app)
       .post("/api/articles/9999/comments")
@@ -165,7 +212,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .then(({ body }) => {
         expect(body.msg).toBe("Article Does Not Exist :(");
       });
-  })
+  });
   test("status:400, responds with an error message when 'author' is missing", () => {
     return request(app)
       .post("/api/articles/1/comments")
@@ -180,82 +227,80 @@ describe("POST /api/articles/:article_id/comments", () => {
       .post("/api/articles/1/comments")
       .send({
         author: "nonexistent_user",
-        comment: "this should fail"
+        comment: "this should fail",
       })
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("User not found");
       });
-  })
-  
-describe("Patch /api/articles/:article_id", () => {
-  test("200: responds with updated article when votes decremented", () => {
-    return request(app)
-      .patch("/api/articles/1")
-      .send({ inc_votes: -10 })
-      .expect(200)
-      .then(({ body }) => {
-        expect(body.article).toHaveProperty("article_id", 1);
-        expect(typeof body.article.votes).toBe("number");
-      });
   });
 
-  test("400: responds with error when article_id is invalid (not a number)", () => {
-    return request(app)
-      .patch("/api/articles/not-an-id")
-      .send({ inc_votes: 1 })
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Invalid Input :(");
-      });
-  });
+  describe("Patch /api/articles/:article_id", () => {
+    test("200: responds with updated article when votes decremented", () => {
+      return request(app)
+        .patch("/api/articles/1")
+        .send({ inc_votes: -10 })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.article).toHaveProperty("article_id", 1);
+          expect(typeof body.article.votes).toBe("number");
+        });
+    });
 
-  test("404: responds with error when article_id does not exist", () => {
-    return request(app)
-      .patch("/api/articles/9999")
-      .send({ inc_votes: 1 })
-      .expect(404)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Article Does Not Exist :(");
-      });
-  });
+    test("400: responds with error when article_id is invalid (not a number)", () => {
+      return request(app)
+        .patch("/api/articles/not-an-id")
+        .send({ inc_votes: 1 })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid Input :(");
+        });
+    });
 
-  test("400: responds with error when inc_votes is not a number", () => {
-    return request(app)
-      .patch("/api/articles/1")
-      .send({ inc_votes: "banana" })
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Invalid Input :(");
-      });
-  });
+    test("404: responds with error when article_id does not exist", () => {
+      return request(app)
+        .patch("/api/articles/9999")
+        .send({ inc_votes: 1 })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Article Does Not Exist :(");
+        });
+    });
 
-  test("400: responds with error when inc_votes is missing", () => {
-    return request(app)
-      .patch("/api/articles/1")
-      .send({})
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Invalid Input :(");
-      });
+    test("400: responds with error when inc_votes is not a number", () => {
+      return request(app)
+        .patch("/api/articles/1")
+        .send({ inc_votes: "banana" })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid Input :(");
+        });
+    });
+
+    test("400: responds with error when inc_votes is missing", () => {
+      return request(app)
+        .patch("/api/articles/1")
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Invalid Input :(");
+        });
+    });
   });
 });
-})
 
 describe("DELETE /api/comments/:comment_id", () => {
   test("204: deletes the comment by ID and responds with no content", () => {
-    return request(app)
-      .delete("/api/comments/1")
-      .expect(204);
+    return request(app).delete("/api/comments/1").expect(204);
   });
   test("404: reponds with error if commentdoes not exits", () => {
     return request(app)
-    .delete("/api/comments/9999")
-    .expect(404)
-    .then(({ body }) => {
-      expect(body.msg).toBe("Comment Does Not Exist :(")
-    })
-  })
+      .delete("/api/comments/9999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Comment Does Not Exist :(");
+      });
+  });
   test("400: responds with error if comment_id is not a number", () => {
     return request(app)
       .delete("/api/comments/notanid")
@@ -266,8 +311,20 @@ describe("DELETE /api/comments/:comment_id", () => {
   });
 });
 
-
-
-
-
-
+describe("GET /api/users", () => {
+  test("200: Responds with an array of user objects", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        const usersArray = body.users;
+        expect(Array.isArray(usersArray)).toBe(true);
+        expect(usersArray.length).toBeGreaterThan(0);
+        usersArray.forEach((user) => {
+          expect(typeof user.username).toBe("string");
+          expect(typeof user.name).toBe("string");
+          expect(typeof user.avatar_url).toBe("string");
+        });
+      });
+  });
+});

@@ -11,7 +11,8 @@ const {
   getArticleComments,
   postCommentByArticleId,
   patchArticleById,
-  deleteCommentById
+  deleteCommentById,
+  getUsers
 } = require("./controllers/controllers");
 
 app.get("/api", getApi);
@@ -29,6 +30,8 @@ app.post("/api/articles/:article_id/comments", postCommentByArticleId);
 app.patch("/api/articles/:article_id", patchArticleById)
 
 app.delete("/api/comments/:comment_id", deleteCommentById)
+
+app.get("/api/users", getUsers)
 
 
 app.use((err, req, res, next) => {
